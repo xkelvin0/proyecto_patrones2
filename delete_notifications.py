@@ -7,6 +7,7 @@ django.setup()
 
 # Importa los modelos después de configurar Django
 from django.db import connection
+
 def delete_notifications():
     with connection.cursor() as cursor:
         # Verifica si la tabla existe antes de intentar borrarla
