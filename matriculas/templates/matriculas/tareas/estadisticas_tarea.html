@@ -1,0 +1,412 @@
+{% extends 'matriculas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Estadísticas de la tarea</h2>
+                <div>
+                    <a href="{% url 'ver_tarea_profesor' tarea.id %}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left"></i> Volver a la tarea
+                    </a>
+                    <a href="{% url 'exportar_tarea' tarea.id %}" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Exportar a Excel
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ tarea.titulo }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Curso:</strong> {{ tarea.curso.nombre }}</p>
+                            <p><strong>Fecha límite:</strong> {{ tarea.fecha_limite|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total de estudiantes:</strong> {{ total_estudiantes }}</p>
+                            <p><strong>Puntos:</strong> {{ tarea.puntos|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Resumen de entregas</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="d-flex justify-content-center mb-3">
+                                <div class="chart-container" style="position: relative; width: 200px; height: 200px;">
+                                    <canvas id="entregasChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="p-2 bg-success bg-opacity-10 rounded">
+                                        <h3 class="mb-0 text-success">{{ total_entregas }}</h3>
+                                        <small class="text-muted">Entregadas</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 bg-secondary bg-opacity-10 rounded">
+                                        <h3 class="mb-0 text-secondary">{{ total_estudiantes|add:total_entregas|sub:total_entregas }}</h3>
+                                        <small class="text-muted">Pendientes</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ porcentaje_entregas }}%" 
+                                         aria-valuenow="{{ porcentaje_entregas }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ porcentaje_entregas|floatformat:1 }}%
+                                    </div>
+                                </div>
+                                <small class="text-muted">Porcentaje de entregas</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Distribución de calificaciones</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="position: relative; height: 200px;">
+                                <canvas id="calificacionesChart"></canvas>
+                            </div>
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small>0-5: {{ rangos_calificaciones.0.cantidad }}</small>
+                                    <small>6-10: {{ rangos_calificaciones.1.cantidad }}</small>
+                                    <small>11-15: {{ rangos_calificaciones.2.cantidad }}</small>
+                                    <small>16-20: {{ rangos_calificaciones.3.cantidad }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Estadísticas generales</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Promedio:</span>
+                                        <strong>{{ estadisticas.promedio|default_if_none:"-"|floatformat:1 }}/{{ tarea.puntos }}</strong>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Calificación más alta:</span>
+                                        <strong>{{ estadisticas.maximo|default_if_none:"-" }}/{{ tarea.puntos }}</strong>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Calificación más baja:</span>
+                                        <strong>{{ estadisticas.minimo|default_if_none:"-" }}/{{ tarea.puntos }}</strong>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Estudiantes aprobados:</span>
+                                        <strong>{{ estadisticas.aprobados|default:0 }}</strong>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Estudiantes desaprobados:</span>
+                                        <strong>{{ estadisticas.desaprobados|default:0 }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Últimas entregas</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Fecha de entrega</th>
+                                    <th>Estado</th>
+                                    <th>Calificación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entrega in ultimas_entregas %}
+                                <tr>
+                                    <td>{{ entrega.estudiante.user.get_full_name|default:entrega.estudiante.user.username }}</td>
+                                    <td>{{ entrega.fecha_entrega|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge {% if entrega.estado == 'A' %}bg-success{% elif entrega.estado == 'R' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ entrega.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if entrega.calificacion is not None %}
+                                            {{ entrega.calificacion }}/{{ tarea.puntos }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'ver_entrega' entrega.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                            <p class="mt-2 mb-0">No hay entregas aún</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a href="{% url 'ver_tarea_profesor' tarea.id %}" class="btn btn-sm btn-outline-primary">
+                            Ver todas las entregas
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Entregas por día</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="position: relative; height: 250px;">
+                                <canvas id="entregasPorDiaChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Rendimiento por estudiante</h6>
+                            <small class="text-muted">Top 5</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="position: relative; height: 250px;">
+                                <canvas id="rendimientoEstudiantesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Datos para las gráficas (simulados, deberían venir del backend)
+    const entregasPorDia = {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        datasets: [{
+            label: 'Entregas',
+            data: [3, 5, 7, 4, 6, 2, 1],
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            tension: 0.3
+        }]
+    };
+    
+    const rendimientoEstudiantes = {
+        labels: ['Estudiante 1', 'Estudiante 2', 'Estudiante 3', 'Estudiante 4', 'Estudiante 5'],
+        datasets: [{
+            label: 'Calificación',
+            data: [18, 15, 12, 10, 8],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+                'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+                'rgba(75, 192, 192, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 99, 132, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    // Gráfica de entregas (dona)
+    const entregasCtx = document.getElementById('entregasChart').getContext('2d');
+    new Chart(entregasCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Entregadas', 'Pendientes'],
+            datasets: [{
+                data: [{{ total_entregas }}, {{ total_estudiantes|add:total_entregas|sub:total_entregas }}],
+                backgroundColor: ['#28a745', '#6c757d'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Gráfica de distribución de calificaciones (barras)
+    const calificacionesCtx = document.getElementById('calificacionesChart').getContext('2d');
+    new Chart(calificacionesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['0-5', '6-10', '11-15', '16-20'],
+            datasets: [{
+                label: 'Número de estudiantes',
+                data: [
+                    {{ rangos_calificaciones.0.cantidad }}, 
+                    {{ rangos_calificaciones.1.cantidad }}, 
+                    {{ rangos_calificaciones.2.cantidad }}, 
+                    {{ rangos_calificaciones.3.cantidad }}
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Gráfica de entregas por día (línea)
+    const entregasPorDiaCtx = document.getElementById('entregasPorDiaChart').getContext('2d');
+    new Chart(entregasPorDiaCtx, {
+        type: 'line',
+        data: entregasPorDia,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Gráfica de rendimiento por estudiante (barras horizontales)
+    const rendimientoEstudiantesCtx = document.getElementById('rendimientoEstudiantesChart').getContext('2d');
+    new Chart(rendimientoEstudiantesCtx, {
+        type: 'bar',
+        data: rendimientoEstudiantes,
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 20,
+                    title: {
+                        display: true,
+                        text: 'Puntaje (máx. {{ tarea.puntos }})'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

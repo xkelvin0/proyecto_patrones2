@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Matrículas{% endblock %}</title>
+    <!-- Bootstrap 5.3.2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4bb543;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding-top: 70px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.2rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn {
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: var(--transition);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--box-shadow);
+            background-color: #fff;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.8em;
+            border-radius: 50px;
+        }
+
+        .alert {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .form-control, .form-select {
+            border-radius: var(--border-radius);
+            padding: 0.6rem 1rem;
+            border: 1px solid #e0e0e0;
+            transition: var(--transition);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+        }
+
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Estilos para el tema oscuro */
+        [data-bs-theme="dark"] {
+            background-color: #1a1a2e;
+            color: #f8f9fa;
+        }
+
+        [data-bs-theme="dark"] .card {
+            background-color: #16213e;
+            border: 1px solid #2d3748;
+        }
+
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select {
+            background-color: #1f2937;
+            border-color: #374151;
+            color: #f8f9fa;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Barra de navegación superior -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
+                <i class="bi bi-mortarboard-fill me-2"></i>
+                <span>EduMatriculas</span>
+            </a>
+            
+            <!-- Botón para móviles -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menú de navegación -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if user.is_authenticated %}
+                        {% if user.estudiante %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_estudiante' %}active{% endif %}" 
+                                   href="{% url 'dashboard_estudiante' %}">
+                                    <i class="bi bi-speedometer2 me-1"></i> Mi Panel
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'dashboard_estudiante' %}#cursos-disponibles">
+                                    <i class="bi bi-book me-1"></i> Mis Cursos
+                                </a>
+                            </li>
+                        {% elif user.profesor %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_profesor' %}active{% endif %}" 
+                                   href="{% url 'dashboard_profesor' %}">
+                                    <i class="bi bi-speedometer2 me-1"></i> Panel del Profesor
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'dashboard_profesor' %}">
+                                    <i class="bi bi-people me-1"></i> Mis Estudiantes
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <!-- Menú de usuario -->
+                {% if user.is_authenticated %}
+                    <div class="d-flex align-items-center">
+                        <!-- Selector de tema -->
+                        <div class="me-3">
+                            <button class="btn btn-sm btn-outline-light rounded-pill" id="themeToggle">
+                                <i class="bi bi-moon-stars"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Notificaciones -->
+                        <div class="dropdown me-3">
+                            <button class="btn btn-link text-white p-0 position-relative" 
+                                    type="button" id="notificationsDropdown" 
+                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                    data-bs-auto-close="outside">
+                                <i class="bi bi-bell fs-5"></i>
+                                {% if total_notificaciones_no_leidas > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ total_notificaciones_no_leidas }}
+                                    <span class="visually-hidden">notificaciones no leídas</span>
+                                </span>
+                                {% endif %}
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 350px; max-height: 400px; overflow-y: auto;">
+                                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                                    <h6 class="mb-0">Notificaciones</h6>
+                                    {% if total_notificaciones_no_leidas > 0 %}
+                                    <form action="{% url 'notificaciones:eliminar_todas_notificaciones' %}" method="post" class="d-inline" id="deleteAllNotificationsForm">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" 
+                                                title="Eliminar todas las notificaciones">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if notificaciones_no_leidas %}
+                                    {% for notificacion in notificaciones_no_leidas %}
+                                    {% if notificacion.url %}
+                                    <a href="{{ notificacion.url }}" class="dropdown-item p-3 border-bottom notification-item" 
+                                       data-notification-id="{{ notificacion.id }}">
+                                    {% else %}
+                                    <div class="dropdown-item p-3 border-bottom notification-item" 
+                                         data-notification-id="{{ notificacion.id }}">
+                                    {% endif %}
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="me-2">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="badge bg-{{ notificacion.tipo|default:'info' }} me-2">
+                                                        {{ notificacion.get_tipo_display }}
+                                                    </span>
+                                                    <small class="text-muted">{{ notificacion.fecha_creacion|timesince }}</small>
+                                                </div>
+                                                <h6 class="mb-1">{{ notificacion.titulo }}</h6>
+                                                <p class="mb-1 small">{{ notificacion.mensaje|truncatechars:100 }}</p>
+                                            </div>
+                                            <form action="{% url 'notificaciones:eliminar_notificacion' notificacion.id %}" method="post" class="delete-notification-form" onclick="event.stopPropagation();">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-link text-muted p-0" 
+                                                        title="Eliminar notificación">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% if notificacion.url %}
+                                    </a>
+                                    {% else %}
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                    <div class="dropdown-divider m-0"></div>
+                                    <div class="text-center p-2">
+                                        <a href="#" class="text-decoration-none small">Ver todas las notificaciones</a>
+                                    </div>
+                                {% else %}
+                                    <div class="p-3 text-center">
+                                        <p class="text-muted mb-0">No hay notificaciones nuevas</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Perfil de usuario -->
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" 
+                               id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="avatar me-2">
+                                    <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 36px; height: 36px;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                </div>
+                                <span class="d-none d-lg-inline">{{ user.get_short_name|default:user.username }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                                <li>
+                                    <div class="d-flex align-items-center px-3 py-2">
+                                        <div class="me-3">
+                                            <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
+                                            <small class="text-muted">
+                                                {% if user.estudiante %}
+                                                    Estudiante
+                                                {% elif user.profesor %}
+                                                    Profesor
+                                                {% else %}
+                                                    Administrador
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-person me-2"></i>Mi Perfil
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-gear me-2"></i>Configuración
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="d-flex">
+                        <a href="{% url 'registro_estudiante' %}" class="btn btn-outline-light me-2">
+                            <i class="bi bi-person-plus me-1"></i> Registrarse
+                        </a>
+                        {% if not user.profesor %}
+                            <a href="{% url 'registro_profesor' %}" class="btn btn-light text-primary">
+                                <i class="bi bi-person-video3 me-1"></i> Soy Profesor
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="container my-4 fade-in">
+        <!-- Mensajes flash -->
+        {% if messages %}
+            <div class="row">
+                <div class="col-12">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                            <div class="d-flex align-items-center">
+                                {% if message.tags == 'success' %}
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                {% elif message.tags == 'error' %}
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                {% endif %}
+                                <div>{{ message }}</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Contenido específico de cada página -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5 class="text-white mb-3">
+                        <i class="bi bi-mortarboard-fill me-2"></i>EduMatriculas
+                    </h5>
+                    <p class="text-muted">Plataforma de gestión académica diseñada para simplificar el proceso de matrícula y seguimiento de cursos.</p>
+                    <div class="social-links mt-3">
+                        <a href="#" class="text-white me-2"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white me-2"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-white me-2"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-white mb-3">Enlaces Rápidos</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Inicio</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Cursos</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Profesores</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Precios</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-white mb-3">Soporte</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Preguntas Frecuentes</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Centro de Ayuda</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Términos y Condiciones</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Política de Privacidad</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="text-white mb-3">Contacto</h6>
+                    <ul class="list-unstyled text-muted">
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt-fill me-2"></i> Av. Ejemplo 123, Lima, Perú
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-envelope-fill me-2"></i> info@edumatriculas.com
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-telephone-fill me-2"></i> +51 123 456 789
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 bg-secondary">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; {% now "Y" %} EduMatriculas. Todos los derechos reservados.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">
+                        Desarrollado con <i class="bi bi-heart-fill text-danger"></i> por TuEquipo
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery (necesario para AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Script para manejar la eliminación de notificaciones -->
+    <script>
+    $(document).ready(function() {
+        // Manejar la eliminación de notificaciones individuales
+        $('.delete-notification-form').on('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const form = $(this);
+            const notificationItem = form.closest('.notification-item');
+            
+            $.ajax({
+                url: form.attr('action'),
+                method: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    // Eliminar el elemento de notificación del DOM
+                    notificationItem.fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        // Actualizar el contador de notificaciones
+                        const badge = $('#notificationsDropdown .badge');
+                        const count = parseInt(badge.text()) - 1;
+                        
+                        if (count > 0) {
+                            badge.text(count);
+                        } else {
+                            badge.remove();
+                            // Mostrar mensaje de "No hay notificaciones" si se eliminó la última
+                            if ($('.notification-item').length === 0) {
+                                $('.dropdown-menu').html(`
+                                    <div class="p-3 text-center">
+                                        <p class="text-muted mb-0">No hay notificaciones nuevas</p>
+                                    </div>
+                                `);
+                            }
+                        }
+                    });
+                },
+                error: function() {
+                    alert('Error al eliminar la notificación');
+                }
+            });
+        });
+        
+        // Manejar la eliminación de todas las notificaciones
+        $('#deleteAllNotificationsForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            if (confirm('¿Estás seguro de que deseas eliminar todas las notificaciones?')) {
+                const form = $(this);
+                
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'POST',
+                    data: form.serialize(),
+                    success: function(response) {
+                        // Actualizar la interfaz
+                        $('.notification-item').fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                        
+                        // Eliminar el badge de notificaciones
+                        $('#notificationsDropdown .badge').remove();
+                        
+                        // Mostrar mensaje de "No hay notificaciones"
+                        $('.dropdown-menu').html(`
+                            <div class="p-3 text-center">
+                                <p class="text-muted mb-0">No hay notificaciones nuevas</p>
+                            </div>
+                        `);
+                    },
+                    error: function() {
+                        alert('Error al eliminar las notificaciones');
+                    }
+                });
+            }
+        });
+        
+        // Marcar notificaciones como leídas al hacer clic en ellas
+        $('.notification-item').on('click', function(e) {
+            if (!$(e.target).closest('.delete-notification-form').length) {
+                const notificationId = $(this).data('notification-id');
+                
+                // Aquí podrías agregar una llamada AJAX para marcar como leída
+                // si lo deseas en el futuro
+            }
+        });
+    });
+    </script>
+    
+    <!-- Script para el tema oscuro -->
+    <script>
+        // Función para alternar entre tema claro y oscuro
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Actualizar el atributo data-bs-theme
+            html.setAttribute('data-bs-theme', newTheme);
+            
+            // Guardar la preferencia en localStorage
+            localStorage.setItem('theme', newTheme);
+            
+            // Actualizar el ícono del botón
+            const icon = document.querySelector('#themeToggle i');
+            icon.className = newTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+        }
+        
+        // Aplicar el tema guardado al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            
+            // Configurar el ícono del botón según el tema actual
+            const icon = document.querySelector('#themeToggle i');
+            if (icon) {
+                icon.className = savedTheme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+            }
+            
+            // Agregar evento al botón de alternar tema
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+            
+            // Inicializar tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Inicializar popovers
+            const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.map(function (popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

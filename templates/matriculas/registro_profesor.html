@@ -1,0 +1,145 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}Registro de Profesor - Sistema de Matrículas{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Registro de Profesor</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h5 class="mb-3">Datos de Usuario</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ user_form.username.id_for_label }}" class="form-label">
+                                Nombre de usuario
+                            </label>
+                            {{ user_form.username }}
+                            {% if user_form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ user_form.username.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ user_form.email.id_for_label }}" class="form-label">
+                                Correo electrónico
+                            </label>
+                            {{ user_form.email }}
+                            {% if user_form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ user_form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ user_form.password1.id_for_label }}" class="form-label">
+                                Contraseña
+                            </label>
+                            {{ user_form.password1 }}
+                            {% if user_form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ user_form.password1.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ user_form.password2.id_for_label }}" class="form-label">
+                                Confirmar Contraseña
+                            </label>
+                            {{ user_form.password2 }}
+                            {% if user_form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ user_form.password2.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Datos del Profesor</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ user_form.first_name.id_for_label }}" class="form-label">
+                                Nombres
+                            </label>
+                            {{ user_form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ user_form.last_name.id_for_label }}" class="form-label">
+                                Apellidos
+                            </label>
+                            {{ user_form.last_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ profesor_form.codigo_profesor.id_for_label }}" class="form-label">
+                                Código de Profesor
+                            </label>
+                            {{ profesor_form.codigo_profesor }}
+                            {% if profesor_form.codigo_profesor.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ profesor_form.codigo_profesor.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ profesor_form.especialidad.id_for_label }}" class="form-label">
+                                Especialidad
+                            </label>
+                            {{ profesor_form.especialidad }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ profesor_form.telefono.id_for_label }}" class="form-label">
+                                Teléfono
+                            </label>
+                            {{ profesor_form.telefono }}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Una vez registrado, tu cuenta deberá ser aprobada por un administrador antes de que puedas acceder al sistema.
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'index' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Registrarse como Profesor
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+                    <p>¿Eres estudiante? <a href="{% url 'registro_estudiante' %}">Regístrate como estudiante</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Agregar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        // Campos de usuario
+        const userFields = document.querySelectorAll('#id_username, #id_email, #id_password1, #id_password2, #id_first_name, #id_last_name');
+        userFields.forEach(field => {
+            field.classList.add('form-control');
+        });
+        
+        // Campos de profesor
+        const profesorFields = document.querySelectorAll('#id_codigo_profesor, #id_especialidad, #id_telefono');
+        profesorFields.forEach(field => {
+            field.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}

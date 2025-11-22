@@ -1,0 +1,145 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}Subir Material - {{ curso.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-upload me-2"></i>Subir Material
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{% url 'ver_contenido_curso' curso.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al contenido del curso
+                        </a>
+                    </div>
+                    
+                    <h5 class="mb-4">Curso: {{ curso.nombre }}</h5>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_titulo" class="form-label">Título del material</label>
+                            <input type="text" class="form-control {% if form.titulo.errors %}is-invalid{% endif %}" 
+                                   id="id_titulo" name="titulo" value="{{ form.titulo.value|default:'' }}" required>
+                            {% if form.titulo.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.titulo.errors.0 }}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Un título descriptivo para el material.</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control {% if form.descripcion.errors %}is-invalid{% endif %}" 
+                                     id="id_descripcion" name="descripcion" rows="3">{{ form.descripcion.value|default:'' }}</textarea>
+                            {% if form.descripcion.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.descripcion.errors.0 }}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Opcional. Proporciona una descripción detallada del material.</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_semana" class="form-label">Semana</label>
+                            <select class="form-select {% if form.semana.errors %}is-invalid{% endif %}" 
+                                    id="id_semana" name="semana" required>
+                                {% for i in "x"|ljust:"16" %}
+                                    <option value="{{ forloop.counter }}" {% if form.semana.value == forloop.counter or not form.semana.value and forloop.first %}selected{% endif %}>
+                                        Semana {{ forloop.counter }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.semana.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.semana.errors.0 }}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Selecciona la semana a la que pertenece este material.</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_archivo" class="form-label">Archivo (opcional)</label>
+                            <input class="form-control {% if form.archivo.errors %}is-invalid{% endif %}" 
+                                   type="file" id="id_archivo" name="archivo">
+                            {% if form.archivo.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.archivo.errors.0 }}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Sube un archivo (PDF, Word, PowerPoint, etc.)</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_enlace" class="form-label">O enlace (opcional)</label>
+                            <input type="url" class="form-control {% if form.enlace.errors %}is-invalid{% endif %}" 
+                                   id="id_enlace" name="enlace" value="{{ form.enlace.value|default:'' }}" 
+                                   placeholder="https://ejemplo.com">
+                            {% if form.enlace.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.enlace.errors.0 }}
+                                </div>
+                            {% else %}
+                                <div class="form-text">O proporciona un enlace a un recurso en línea.</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload me-1"></i> Subir Material
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Validación del formulario del lado del cliente
+(function () {
+  'use strict'
+
+  // Obtener todos los formularios a los que queremos aplicar estilos de validación de Bootstrap
+  var forms = document.querySelectorAll('.needs-validation')
+
+  // Bucle sobre ellos y evitar el envío
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,281 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}{{ curso.nombre }} - Detalles del Curso{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                {% if es_estudiante %}
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_estudiante' %}">Panel del Estudiante</a></li>
+                {% else %}
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard_profesor' %}">Panel del Profesor</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active" aria-current="page">{{ curso.nombre }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Información del Curso -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Curso</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Código</h6>
+                    <p class="mb-0">{{ curso.codigo }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Profesor</h6>
+                    <p class="mb-0">
+                        {{ curso.profesor.user.get_full_name|default:curso.profesor.user.username }}
+                    </p>
+                    <small class="text-muted">{{ curso.profesor.especialidad|default:"Sin especialidad especificada" }}</small>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Créditos</h6>
+                    <p class="mb-0">{{ curso.creditos }} créditos</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Horario</h6>
+                    <p class="mb-0">{{ curso.horario|default:"No especificado" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Aula</h6>
+                    <p class="mb-0">{{ curso.aula|default:"No especificada" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Cupos Disponibles</h6>
+                    {% with porcentaje_disponible=curso.porcentaje_cupos_disponibles|default:0 %}
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar 
+                            {% if porcentaje_disponible > 50 %}
+                                bg-success
+                            {% elif porcentaje_disponible > 20 %}
+                                bg-warning
+                            {% else %}
+                                bg-danger
+                            {% endif %}" 
+                            role="progressbar" 
+                            style="width: {{ porcentaje_disponible }}%" 
+                            aria-valuenow="{{ porcentaje_disponible }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                            {{ curso.cupos_disponibles }} / {{ curso.cupos_totales }}
+                        </div>
+                    </div>
+                    {% endwith %}
+                </div>
+                
+                {% if es_estudiante and not ya_matriculado %}
+                    <div class="d-grid">
+                        <a href="{% url 'matricular_curso' curso.id %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Matricularme en este curso
+                        </a>
+                    </div>
+                {% elif es_estudiante and ya_matriculado %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> Ya estás matriculado en este curso.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Descripción</h5>
+            </div>
+            <div class="card-body">
+                {% if curso.descripcion %}
+                    {{ curso.descripcion|linebreaks }}
+                {% else %}
+                    <p class="text-muted">No hay descripción disponible para este curso.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de Estudiantes Matriculados -->
+    <div class="col-md-8">
+        <div class="card">
+            <!-- Pestañas para matrículas aprobadas y pendientes -->
+            <ul class="nav nav-tabs" id="matriculasTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="estudiantes-tab" data-bs-toggle="tab" data-bs-target="#estudiantes" type="button" role="tab">
+                        <i class="bi bi-people me-1"></i> Estudiantes
+                        <span class="badge bg-primary rounded-pill ms-1">{{ matriculas_aprobadas|length }}</span>
+                    </button>
+                </li>
+                {% if es_profesor and matriculas_pendientes %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pendientes-tab" data-bs-toggle="tab" data-bs-target="#pendientes" type="button" role="tab">
+                        Pendientes <span class="badge bg-warning">{{ matriculas_pendientes|length }}</span>
+                    </button>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <div class="card-body">
+                <div class="tab-content" id="matriculasTabContent">
+                    <!-- Pestaña de Estudiantes -->
+                    <div class="tab-pane fade show active" id="estudiantes" role="tabpanel" aria-labelledby="estudiantes-tab">
+                        {% if matriculas_aprobadas %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Estudiante</th>
+                                            <th>Código</th>
+                                            <th>Condición</th>
+                                            <th>Nota</th>
+                                            {% if es_profesor %}
+                                            <th>Acciones</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for matricula in matriculas_aprobadas %}
+                                        <tr>
+                                            <td>{{ matricula.estudiante.user.get_full_name|default:matricula.estudiante.user.username }}</td>
+                                            <td>{{ matricula.estudiante.codigo_estudiante }}</td>
+                                            <td>
+                                                {% if matricula.nota is None %}
+                                                    <span class="badge bg-info">En curso</span>
+                                                {% elif matricula.nota >= 13 %}
+                                                    <span class="badge bg-success">Aprobado</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Desaprobado</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ matricula.nota|default:"Sin calificar" }}</td>
+                                            {% if es_profesor %}
+                                            <td></td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                No hay estudiantes aprobados en este curso.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Pestaña de Solicitudes Pendientes -->
+                    {% if es_profesor and matriculas_pendientes %}
+                    <div class="tab-pane fade" id="pendientes" role="tabpanel" aria-labelledby="pendientes-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Estudiante</th>
+                                        <th>Código</th>
+                                        <th>Estado</th>
+                                        <th>Fecha de Solicitud</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for matricula in matriculas_pendientes %}
+                                    <tr>
+                                        <td>{{ matricula.estudiante.user.get_full_name|default:matricula.estudiante.user.username }}</td>
+                                        <td>{{ matricula.estudiante.codigo_estudiante }}</td>
+                                        <td><span class="badge bg-secondary">Pendiente de aprobación</span></td>
+                                        <td>-</td>
+                                        <td>{{ matricula.fecha_matricula|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'aprobar_matricula' matricula.id 'aprobar' %}" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-check-lg"></i> Aprobar
+                                                </a>
+                                                <a href="{% url 'aprobar_matricula' matricula.id 'rechazar' %}" class="btn btn-sm btn-danger">
+                                                    <i class="bi bi-x-lg"></i> Rechazar
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if not matriculas_aprobadas and not matriculas_pendientes %}
+                <div class="text-center py-4">
+                    <div class="mb-3">
+                        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-muted">No hay estudiantes matriculados en este curso.</p>
+                    {% if es_profesor %}
+                        <p class="text-muted">Comparte el código del curso con los estudiantes para que se inscriban.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            {% if es_profesor and matriculas_aprobadas %}
+            <div class="card-footer text-end">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportarCalificacionesModal">
+                    Exportar Calificaciones
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal para exportar calificaciones -->
+<div class="modal fade" id="exportarCalificacionesModal" tabindex="-1" 
+     aria-labelledby="exportarCalificacionesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportarCalificacionesModalLabel">Exportar Calificaciones</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Seleccione el formato de exportación:</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'exportar_calificaciones' curso.id %}" class="btn btn-outline-primary">
+                        <i class="bi bi-file-earmark-pdf"></i> Exportar a PDF
+                    </a>
+                    <a href="{% url 'exportar_calificaciones' curso.id %}" class="btn btn-outline-success">
+                        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+                    </a>
+                    <a href="{% url 'exportar_calificaciones' curso.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-earmark-text"></i> Exportar a CSV
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inicializar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

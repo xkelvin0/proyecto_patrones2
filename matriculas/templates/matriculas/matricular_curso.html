@@ -1,0 +1,173 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}Matricularme en {{ curso.nombre }} - Sistema de Matrículas{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Confirmar Matrícula</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">¡Estás a un paso de matricularte en este curso!</h5>
+                    <p class="mb-0">Por favor, revisa la información del curso y confirma tu matrícula.</p>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ curso.nombre }}</h5>
+                        <h6 class="card-subtitle mb-3 text-muted">{{ curso.codigo }}</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Profesor:</strong> {{ curso.profesor.user.get_full_name|default:curso.profesor.user.username }}</p>
+                                <p class="mb-1"><strong>Créditos:</strong> {{ curso.creditos }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Horario:</strong> {{ curso.horario|default:"No especificado" }}</p>
+                                <p class="mb-1"><strong>Aula:</strong> {{ curso.aula|default:"No especificada" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge {% if curso.cupos_disponibles > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ curso.cupos_disponibles }} cupos disponibles
+                                    </span>
+                                </div>
+                                <small class="text-muted">
+                                    {% if curso.cupos_disponibles > 0 %}
+                                        <i class="bi bi-check-circle-fill text-success"></i> Hay cupos disponibles
+                                    {% else %}
+                                        <i class="bi bi-x-circle-fill text-danger"></i> No hay cupos disponibles
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% with porcentaje_disponible=curso.porcentaje_cupos_disponibles|default:0 %}
+                            <div class="progress mt-2" style="height: 10px;">
+                                <div class="progress-bar 
+                                    {% if porcentaje_disponible > 50 %}
+                                        bg-success
+                                    {% elif porcentaje_disponible > 20 %}
+                                        bg-warning
+                                    {% else %}
+                                        bg-danger
+                                    {% endif %}" 
+                                    role="progressbar" 
+                                    style="width: {{ porcentaje_disponible }}%" 
+                                    aria-valuenow="{{ porcentaje_disponible }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                            {% endwith %}
+                        </div>
+                        
+                        {% if curso.descripcion %}
+                            <div class="alert alert-light">
+                                <h6 class="alert-heading">Descripción del curso:</h6>
+                                {{ curso.descripcion|linebreaks }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3">Información del Estudiante</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Nombre:</strong> {{ estudiante.user.get_full_name|default:estudiante.user.username }}</p>
+                                        <p class="mb-1"><strong>Código:</strong> {{ estudiante.codigo_estudiante }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Correo:</strong> {{ estudiante.user.email }}</p>
+                                        <p class="mb-1"><strong>Teléfono:</strong> {{ estudiante.telefono|default:"No especificado" }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="confirmarDatos" name="confirmar_datos" required>
+                                        <label class="form-check-label" for="confirmarDatos">
+                                            Confirmo que mis datos son correctos y deseo matricularme en este curso
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        Si necesitas actualizar tu información, por favor ve a la sección de perfil.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if curso.cupos_disponibles > 0 %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'dashboard_estudiante' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-arrow-left"></i> Volver al panel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="btnConfirmar" disabled>
+                                <i class="bi bi-check-circle"></i> Confirmar Matrícula
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <div>
+                                    <h6 class="alert-heading mb-1">¡Cupos agotados!</h6>
+                                    <p class="mb-0">Lo sentimos, no hay cupos disponibles en este momento para este curso.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'dashboard_estudiante' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-left"></i> Volver al Panel
+                            </a>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Habilitar/deshabilitar botón de confirmación según el checkbox
+const checkbox = document.getElementById('confirmarDatos');
+const btnConfirmar = document.getElementById('btnConfirmar');
+
+checkbox.addEventListener('change', function() {
+    btnConfirmar.disabled = !this.checked;
+});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validación del formulario
+        const form = document.querySelector('form');
+        const confirmCheckbox = document.getElementById('confirmarDatos');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!confirmCheckbox.checked) {
+                    e.preventDefault();
+                    alert('Debes confirmar que tus datos son correctos para continuar.');
+                }
+            });
+        }
+        
+        // Inicializar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

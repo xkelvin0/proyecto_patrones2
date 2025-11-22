@@ -1,0 +1,131 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}Contenido del Curso - {{ curso.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Contenido del Curso: {{ curso.nombre }}</h2>
+        <a href="{% url 'dashboard_estudiante' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al Panel
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Plan de Estudios</h4>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="contenidoAccordion">
+                {% for semana, contenido in semanas %}
+                <div class="accordion-item mb-2">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#collapse{{ forloop.counter }}" 
+                                aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                aria-controls="collapse{{ forloop.counter }}">
+                            <strong>{{ semana }}</strong>
+                            {% if contenido.tareas %}
+                            <span class="badge bg-primary ms-2">{{ contenido.tareas|length }} tarea{{ contenido.tareas|length|pluralize }}</span>
+                            {% endif %}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" 
+                         class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                         aria-labelledby="heading{{ forloop.counter }}" 
+                         data-bs-parent="#contenidoAccordion">
+                        <div class="accordion-body">
+                            <h5 class="mb-3">Tareas</h5>
+                            {% if contenido.tareas %}
+                                <div class="list-group mb-3">
+                                    {% for tarea in contenido.tareas %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">{{ tarea.titulo }}</h6>
+                                                <p class="mb-1 text-muted">{{ tarea.descripcion|truncatewords:20 }}</p>
+                                                <small class="text-muted">
+                                                    Entrega: {{ tarea.fecha_limite|date:"d/m/Y H:i" }} |
+                                                    Puntos: {{ tarea.puntos }}
+                                                    {% if tarea.entregada %}
+                                                        | Estado: 
+                                                        {% if tarea.estado_entrega == 'C' %}
+                                                            <span class="text-success">Calificada: {{ tarea.calificacion }}/100</span>
+                                                        {% else %}
+                                                            <span class="text-warning">En revisión</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        | <span class="text-danger">Pendiente de entrega</span>
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                            <div class="btn-group">
+                                                <a href="{% url 'ver_tarea' tarea.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> Ver
+                                                </a>
+                                                {% if not tarea.entregada %}
+                                                <a href="{% url 'entregar_tarea' tarea.id %}" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-upload"></i> Entregar
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">No hay tareas programadas para esta semana.</div>
+                            {% endif %}
+
+                            <h5 class="mb-3">Materiales</h5>
+                            {% if contenido.materiales %}
+                                <div class="list-group">
+                                    {% for material in contenido.materiales %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">{{ material.titulo }}</h6>
+                                                <p class="mb-1 text-muted">{{ material.descripcion|truncatewords:15 }}</p>
+                                                <small class="text-muted">
+                                                    {{ material.tipo }} |
+                                                    Publicado: {{ material.fecha_creacion|date:"d/m/Y" }}
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-download"></i> Descargar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">No hay materiales cargados para esta semana.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Script para manejar la interacción del acordeón
+    document.addEventListener('DOMContentLoaded', function() {
+        // Opcional: Guardar el estado del acordeón en localStorage
+        const accordion = document.getElementById('contenidoAccordion');
+        if (accordion) {
+            accordion.addEventListener('show.bs.collapse', function (event) {
+                // Aquí puedes agregar lógica adicional si es necesario
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,557 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}Inicio - EduMatriculas{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+        color: white;
+        padding: 6rem 0;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgcGF0dGVyblRyYW5zZm9ybT0icm90YXRlKDQ1KSI+PHJlY3Qgd2lkdGg9IjUwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3BhdHRlcm4pIi8+PC9zdmc+');
+        opacity: 0.2;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-title {
+        font-weight: 800;
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.5rem;
+        font-weight: 300;
+        margin-bottom: 2.5rem;
+        opacity: 0.9;
+    }
+    
+    .feature-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: var(--bs-white);
+        height: 100%;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(67, 97, 238, 0.15);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(67, 97, 238, 0.1);
+        border-radius: 50%;
+        color: var(--primary-color);
+        font-size: 2rem;
+    }
+    
+    .cta-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 5rem 0;
+        margin: 5rem 0;
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-pattern {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        opacity: 0.1;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        color: var(--bs-gray-600);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 mx-auto text-center hero-content">
+                <h1 class="hero-title">Transforma tu educación con <span class="text-warning">EduMatriculas</span></h1>
+                <p class="hero-subtitle">La plataforma líder en gestión académica que simplifica tu experiencia educativa</p>
+                
+                <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'registro_estudiante' %}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
+                            <i class="bi bi-arrow-right-circle me-2"></i> Comenzar Ahora
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-lg px-4 py-3">
+                            <i class="bi bi-info-circle me-2"></i> Saber Más
+                        </a>
+                    {% else %}
+                        {% if user.estudiante %}
+                            <a href="{% url 'dashboard_estudiante' %}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
+                                <i class="bi bi-speedometer2 me-2"></i> Ir a mi Panel
+                            </a>
+                        {% elif user.profesor %}
+                            <a href="{% url 'dashboard_profesor' %}" class="btn btn-light btn-lg px-4 py-3 fw-bold">
+                                <i class="bi bi-speedometer2 me-2"></i> Panel del Profesor
+                            </a>
+                        {% else %}
+                            <a href="/admin/" class="btn btn-light btn-lg px-4 py-3 fw-bold">
+                                <i class="bi bi-shield-lock me-2"></i> Panel de Administración
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-center gap-4 mt-5 pt-3">
+                    <div class="text-center">
+                        <div class="h3 mb-0 fw-bold">+5,000</div>
+                        <div class="text-white-50">Estudiantes</div>
+                    </div>
+                    <div class="vr text-white-50"></div>
+                    <div class="text-center">
+                        <div class="h3 mb-0 fw-bold">+200</div>
+                        <div class="text-white-50">Cursos</div>
+                    </div>
+                    <div class="vr text-white-50"></div>
+                    <div class="text-center">
+                        <div class="h3 mb-0 fw-bold">+50</div>
+                        <div class="text-white-50">Profesores</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">Características Principales</span>
+            <h2 class="fw-bold">Todo lo que necesitas en un solo lugar</h2>
+            <p class="text-muted mx-auto" style="max-width: 700px;">Descubre cómo nuestra plataforma puede mejorar tu experiencia educativa con herramientas diseñadas para el éxito académico.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card p-4 text-center h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-mortarboard"></i>
+                    </div>
+                    <h4 class="mb-3">Para Estudiantes</h4>
+                    <p class="text-muted mb-4">Accede a todos tus cursos, realiza seguimiento de tu progreso y mantén tu información académica organizada en un solo lugar.</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Matrícula en línea</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Calificaciones en tiempo real</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Material de estudio</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'registro_estudiante' %}" class="btn btn-outline-primary mt-auto">Registrarse como Estudiante</a>
+                    {% endif %}
+                </div>
+            </div>
+    
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card p-4 text-center h-100">
+                    <div class="feature-icon" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">
+                        <i class="bi bi-person-video3"></i>
+                    </div>
+                    <h4 class="mb-3">Para Profesores</h4>
+                    <p class="text-muted mb-4">Gestiona tus cursos, evalúa a los estudiantes y comparte recursos educativos de manera eficiente.</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Gestión de cursos</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Sistema de calificaciones</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Comunicación con estudiantes</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'registro_profesor' %}" class="btn btn-outline-success mt-auto">Registrarse como Profesor</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card p-4 text-center h-100">
+                    <div class="feature-icon" style="background: rgba(220, 53, 69, 0.1); color: #dc3545;">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h4 class="mb-3">Seguimiento de Progreso</h4>
+                    <p class="text-muted mb-4">Monitorea tu rendimiento académico y alcanza tus metas educativas con nuestras herramientas de análisis.</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Estadísticas detalladas</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Reportes personalizados</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Objetivos de aprendizaje</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'registro_estudiante' %}" class="btn btn-outline-danger mt-auto">Ver Demostración</a>
+                    {% endif %}
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    
+        </div>
+    </section>
+
+    <!-- Testimonios -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">Testimonios</span>
+                <h2 class="fw-bold">Lo que dicen nuestros usuarios</h2>
+                <p class="text-muted mx-auto" style="max-width: 700px;">Descubre la experiencia de estudiantes y profesores que ya confían en nuestra plataforma.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://ui-avatars.com/api/?name=Ana+Garcia&background=4361ee&color=fff" 
+                                     class="rounded-circle me-3" width="50" height="50" alt="Ana García">
+                                <div>
+                                    <h6 class="mb-0">Ana García</h6>
+                                    <small class="text-muted">Estudiante de Ingeniería</small>
+                                </div>
+                            </div>
+                            <p class="card-text">"La plataforma ha simplificado mucho mi vida académica. Puedo ver mis calificaciones y tareas en un solo lugar."</p>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://ui-avatars.com/api/?name=Carlos+Mendoza&background=28a745&color=fff" 
+                                     class="rounded-circle me-3" width="50" height="50" alt="Carlos Mendoza">
+                                <div>
+                                    <h6 class="mb-0">Carlos Mendoza</h6>
+                                    <small class="text-muted">Profesor de Matemáticas</small>
+                                </div>
+                            </div>
+                            <p class="card-text">"Como profesor, me ha facilitado mucho el seguimiento del progreso de mis estudiantes y la gestión de calificaciones."</p>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="https://ui-avatars.com/api/?name=Laura+Torres&background=dc3545&color=fff" 
+                                     class="rounded-circle me-3" width="50" height="50" alt="Laura Torres">
+                                <div>
+                                    <h6 class="mb-0">Laura Torres</h6>
+                                    <small class="text-muted">Estudiante de Derecho</small>
+                                </div>
+                            </div>
+                            <p class="card-text">"La interfaz es muy intuitiva y me encanta poder acceder a todo el material del curso desde cualquier dispositivo."</p>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-half"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="cta-section my-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="fw-bold mb-4">¿Listo para comenzar?</h2>
+                    <p class="lead mb-5">Únete a miles de estudiantes y profesores que ya están transformando su experiencia educativa con nuestra plataforma.</p>
+                    
+                    {% if not user.is_authenticated %}
+                        <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                            <a href="{% url 'registro_estudiante' %}" class="btn btn-primary btn-lg px-5 py-3 fw-bold">
+                                <i class="bi bi-arrow-right-circle me-2"></i> Crear Cuenta Gratis
+                            </a>
+                            <a href="#" class="btn btn-outline-dark btn-lg px-4 py-3" data-bs-toggle="modal" data-bs-target="#contactModal">
+                                <i class="bi bi-chat-dots me-2"></i> Contáctanos
+                            </a>
+                        </div>
+                    {% else %}
+                        {% if user.estudiante %}
+                            <a href="{% url 'dashboard_estudiante' %}" class="btn btn-primary btn-lg px-5 py-3">
+                                <i class="bi bi-speedometer2 me-2"></i> Ir a mi Panel
+                            </a>
+                        {% elif user.profesor %}
+                            <a href="{% url 'dashboard_profesor' %}" class="btn btn-primary btn-lg px-5 py-3">
+                                <i class="bi bi-speedometer2 me-2"></i> Panel del Profesor
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <p class="mt-4 text-muted small">¿Neitas ayuda? <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#contactModal">Contáctanos</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de Contacto -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactModalLabel">Contáctanos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nombre completo</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Mensaje</label>
+                            <textarea class="form-control" id="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Enviar mensaje</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Cursos -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">Nuestros Cursos</span>
+                <h2 class="fw-bold">Explora Nuestra Oferta Académica</h2>
+                <p class="text-muted mx-auto" style="max-width: 700px;">Descubre una amplia variedad de cursos diseñados para potenciar tu aprendizaje y desarrollo profesional.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="position-relative">
+                            <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="card-img-top" alt="Programación" style="height: 200px; object-fit: cover;">
+                            <span class="position-absolute top-0 end-0 m-3 badge bg-primary">Nuevo</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary">Tecnología</span>
+                                <div class="text-warning">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-half"></i>
+                                    <span class="text-muted ms-1">(128)</span>
+                                </div>
+                            </div>
+                            <h5 class="card-title">Programación Web Avanzada</h5>
+                            <p class="card-text text-muted">Domina las últimas tecnologías de desarrollo web y crea aplicaciones modernas y escalables.</p>
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <div>
+                                    <i class="bi bi-people me-1"></i> 256 Estudiantes
+                                </div>
+                                <h5 class="mb-0 text-primary">$99.99</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a href="#" class="btn btn-outline-primary w-100">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="position-relative">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="card-img-top" alt="Marketing" style="height: 200px; object-fit: cover;">
+                            <span class="position-absolute top-0 end-0 m-3 badge bg-success">Popular</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-success bg-opacity-10 text-success">Negocios</span>
+                                <div class="text-warning">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star"></i>
+                                    <span class="text-muted ms-1">(98)</span>
+                                </div>
+                            </div>
+                            <h5 class="card-title">Marketing Digital para Emprendedores</h5>
+                            <p class="card-text text-muted">Aprende estrategias efectivas de marketing digital para hacer crecer tu negocio en línea.</p>
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <div>
+                                    <i class="bi bi-people me-1"></i> 189 Estudiantes
+                                </div>
+                                <h5 class="mb-0 text-primary">$79.99</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a href="#" class="btn btn-outline-primary w-100">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="position-relative">
+                            <img src="https://images.unsplash.com/photo-1547658719-da2b51169166?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" class="card-img-top" alt="Diseño" style="height: 200px; object-fit: cover;">
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-warning bg-opacity-10 text-warning">Diseño</span>
+                                <div class="text-warning">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <span class="text-muted ms-1">(215)</span>
+                                </div>
+                            </div>
+                            <h5 class="card-title">Diseño UX/UI desde Cero</h5>
+                            <p class="card-text text-muted">Domina los principios del diseño de experiencia de usuario e interfaz para crear productos digitales atractivos.</p>
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <div>
+                                    <i class="bi bi-people me-1"></i> 342 Estudiantes
+                                </div>
+                                <h5 class="mb-0 text-primary">$89.99</h5>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a href="#" class="btn btn-outline-primary w-100">Ver Detalles</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                {% if user.is_authenticated %}
+                    {% if user.estudiante %}
+                        <a href="{% url 'dashboard_estudiante' %}#cursos-disponibles" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-book me-2"></i> Ver Todos los Cursos
+                        </a>
+                    {% elif user.profesor %}
+                        <a href="{% url 'dashboard_profesor' %}" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-journal-text me-2"></i> Gestionar Mis Cursos
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'registro_estudiante' %}" class="btn btn-primary btn-lg px-5 me-3">
+                        <i class="bi bi-person-plus me-2"></i> Crear Cuenta Gratis
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-5">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    
+    <!-- Sección de Suscripción -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <div class="bg-white p-5 rounded-3 shadow-sm">
+                        <i class="bi bi-envelope-open display-4 text-primary mb-4"></i>
+                        <h2 class="fw-bold mb-3">Mantente Actualizado</h2>
+                        <p class="lead text-muted mb-4">Suscríbete a nuestro boletín para recibir las últimas actualizaciones, nuevos cursos y ofertas especiales.</p>
+                        
+                        <form class="row g-3 justify-content-center">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <input type="email" class="form-control form-control-lg" placeholder="Tu correo electrónico" required>
+                                    <button class="btn btn-primary px-4" type="submit">
+                                        <i class="bi bi-send-fill me-2"></i> Suscribirse
+                                    </button>
+                                </div>
+                                <div class="form-text text-muted mt-2">No compartiremos tu información con nadie más.</div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

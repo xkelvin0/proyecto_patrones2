@@ -1,0 +1,213 @@
+{% extends 'matriculas/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ tarea.titulo }}</h4>
+                    <span class="badge bg-light text-dark">{{ tarea.curso.nombre }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Descripción</h5>
+                        <p class="card-text">{{ tarea.descripcion|linebreaksbr }}</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">Detalles de la Tarea</h6>
+                                    <p class="mb-1">
+                                        <i class="bi bi-calendar-event"></i> 
+                                        <strong>Fecha límite:</strong> 
+                                        <span class="{% if tarea.fecha_limite < now and not entrega %}text-danger{% endif %}">
+                                            {{ tarea.fecha_limite|date:"d/m/Y H:i" }}
+                                        </span>
+                                    </p>
+                                    <p class="mb-1"><i class="bi bi-star"></i> <strong>Puntos:</strong> {{ tarea.puntos|floatformat:0 }}</p>
+                                    {% if tarea.archivo %}
+                                        <p class="mb-0">
+                                            <i class="bi bi-paperclip"></i> 
+                                            <strong>Archivo adjunto:</strong> 
+                                            <a href="{% url 'descargar_archivo_tarea' tarea.id %}" class="text-decoration-none">
+                                                {{ tarea.archivo.name|slice:":30" }}{% if tarea.archivo.name|length > 30 %}...{% endif %}
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if entrega %}
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 text-muted">Tu Entrega</h6>
+                                    <p class="mb-1">
+                                        <i class="bi bi-clock-history"></i> 
+                                        <strong>Fecha de entrega:</strong> {{ entrega.fecha_entrega|date:"d/m/Y H:i" }}
+                                        {% if entrega.esta_retrasada %}
+                                            <span class="badge bg-danger">Tardía</span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="mb-1">
+                                        <i class="bi bi-check-circle"></i> 
+                                        <strong>Estado:</strong> 
+                                        <span class="badge 
+                                            {% if entrega.estado == 'A' %}bg-success
+                                            {% elif entrega.estado == 'R' %}bg-danger
+                                            {% else %}bg-warning text-dark{% endif %}">
+                                            {{ entrega.get_estado_display }}
+                                        </span>
+                                    </p>
+                                    {% if entrega.calificacion is not None %}
+                                        <p class="mb-1">
+                                            <i class="bi bi-star-fill"></i> 
+                                            <strong>Calificación:</strong> 
+                                            {{ entrega.calificacion }}/{{ tarea.puntos }}
+                                        </p>
+                                    {% endif %}
+                                    {% if entrega.comentario_profesor %}
+                                        <div class="mt-2">
+                                            <p class="mb-1"><strong>Comentarios del profesor:</strong></p>
+                                            <div class="bg-light p-2 rounded">
+                                                {{ entrega.comentario_profesor|linebreaksbr }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">{% if entrega %}Actualizar Entrega{% else %}Entregar Tarea{% endif %}</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                
+                                {% if form_entrega.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {% for error in form_entrega.non_field_errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form_entrega.archivo.id_for_label }}" class="form-label">
+                                        Archivo de entrega
+                                    </label>
+                                    {{ form_entrega.archivo }}
+                                    <div class="form-text">
+                                        Sube el archivo con tu tarea. Formatos permitidos: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP, RAR.
+                                    </div>
+                                    {% if form_entrega.archivo.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form_entrega.archivo.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form_entrega.comentario_estudiante.id_for_label }}" class="form-label">
+                                        Comentarios (opcional)
+                                    </label>
+                                    {{ form_entrega.comentario_estudiante }}
+                                    {% if form_entrega.comentario_estudiante.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form_entrega.comentario_estudiante.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'dashboard_estudiante' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i> Volver al Panel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-upload"></i> 
+                                        {% if entrega %}Actualizar Entrega{% else %}Enviar Tarea{% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    {% if entrega and entrega.archivo %}
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Tus Archivos Entregados</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-file-earmark-text"></i>
+                                        <a href="{% url 'descargar_entrega' entrega.id %}" class="text-decoration-none ms-2">
+                                            {{ entrega.archivo.name|slice:"7:" }}
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small">
+                                            {{ entrega.fecha_entrega|timesince }} atrás
+                                        </span>
+                                        <a href="{% url 'descargar_entrega' entrega.id %}" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="bi bi-download"></i> Descargar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Agregar clases a los campos del formulario
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (input.type !== 'file' && input.type !== 'hidden') {
+                input.classList.add('form-control');
+            }
+            if (input.type === 'file') {
+                input.classList.add('form-control');
+            }
+        });
+        
+        // Mostrar nombre del archivo seleccionado
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const fileName = e.target.files[0] ? e.target.files[0].name : 'Ningún archivo seleccionado';
+                const label = document.createElement('div');
+                label.className = 'form-text';
+                label.id = 'file-selected';
+                
+                const existingLabel = document.getElementById('file-selected');
+                if (existingLabel) {
+                    existingLabel.remove();
+                }
+                
+                label.textContent = `Archivo seleccionado: ${fileName}`;
+                fileInput.parentNode.insertBefore(label, fileInput.nextSibling);
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,272 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}Panel del Estudiante - Sistema de Matrículas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="h4 mb-0">Bienvenido, {{ estudiante.user.get_full_name|default:estudiante.user.username }}</h2>
+                        <p class="text-muted mb-0">Código: {{ estudiante.codigo_estudiante }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary">Estudiante</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Cursos Matriculados -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Mis Cursos</h5>
+                <span class="badge bg-primary">{{ matriculas|length }} cursos</span>
+            </div>
+            <div class="card-body">
+                {% if matriculas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Curso</th>
+                                    <th>Código</th>
+                                    <th>Profesor</th>
+                                    <th>Condición</th>
+                                    <th>Nota</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for matricula in matriculas %}
+                                <tr>
+                                    <td>{{ matricula.curso.nombre }}</td>
+                                    <td>{{ matricula.curso.codigo }}</td>
+                                    <td>{{ matricula.curso.profesor.user.get_full_name|default:matricula.curso.profesor.user.username }}</td>
+                                    <td>
+                                        {% if matricula.nota is None %}
+                                            <span class="badge bg-info">En curso</span>
+                                        {% elif matricula.nota >= 13 %}
+                                            <span class="badge bg-success">Aprobado</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Desaprobado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if matricula.nota is not None %}
+                                            {{ matricula.nota }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="d-flex gap-1">
+                                        <a href="{% url 'ver_curso_estudiante' matricula.curso.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-people"></i> Ver
+                                        </a>
+                                        <a href="{% url 'ver_contenido_estudiante' matricula.curso.id %}" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-journal-text"></i> Contenido
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <p class="text-muted">No estás matriculado en ningún curso actualmente.</p>
+                        <a href="#cursos-disponibles" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Ver Cursos Disponibles
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Estudiante -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Mi Perfil</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 100px; height: 100px;">
+                        <i class="bi bi-person text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Nombre Completo</h6>
+                    <p class="mb-0">{{ estudiante.user.get_full_name|default:'No especificado' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Correo Electrónico</h6>
+                    <p class="mb-0">{{ estudiante.user.email|default:'No especificado' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Código de Estudiante</h6>
+                    <p class="mb-0">{{ estudiante.codigo_estudiante }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Fecha de Nacimiento</h6>
+                    <p class="mb-0">{{ estudiante.fecha_nacimiento|date:"d/m/Y"|default:'No especificada' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Dirección</h6>
+                    <p class="mb-0">{{ estudiante.direccion|default:'No especificada'|linebreaksbr }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Teléfono</h6>
+                    <p class="mb-0">{{ estudiante.telefono|default:'No especificado' }}</p>
+                </div>
+                
+                <div class="d-grid">
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Resumen Académico</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="mb-0">{{ matriculas|length }}</h3>
+                            <small class="text-muted">Cursos</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="mb-0">{{ matriculas_aprobadas|length }}</h3>
+                            <small class="text-muted">Aprobados</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="mb-0">
+                                {% if promedio_notas %}
+                                    {{ promedio_notas|floatformat:1 }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </h3>
+                            <small class="text-muted">Promedio</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="mb-0">
+                                {% if creditos_aprobados %}
+                                    {{ creditos_aprobados }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </h3>
+                            <small class="text-muted">Créditos</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cursos Disponibles -->
+<div class="row" id="cursos-disponibles">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Cursos Disponibles</h5>
+                <span class="badge bg-primary">{{ cursos_disponibles|length }} cursos</span>
+            </div>
+            <div class="card-body">
+                {% if cursos_disponibles %}
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        {% for curso in cursos_disponibles %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="card-title">{{ curso.nombre }}</h5>
+                                        <span class="badge bg-primary">{{ curso.creditos }} créditos</span>
+                                    </div>
+                                    <h6 class="card-subtitle mb-2 text-muted">{{ curso.codigo }}</h6>
+                                    <p class="card-text">{{ curso.descripcion|truncatewords:20 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-person"></i> 
+                                            <small class="text-muted">{{ curso.profesor.user.get_full_name|default:curso.profesor.user.username }}</small>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-{% if curso.cupos_disponibles > 0 %}success{% else %}danger{% endif %}">
+                                                {{ curso.cupos_disponibles }} cupos
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="d-flex justify-content-between">
+                                        <a href="{% url 'detalle_curso' curso.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-info-circle"></i> Detalles
+                                        </a>
+                                        {% if curso.cupos_disponibles > 0 %}
+                                            <a href="{% url 'matricular_curso' curso.id %}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-plus-circle"></i> Matricularme
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="bi bi-x-circle"></i> Sin cupos
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="bi bi-emoji-frown text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <p class="text-muted">No hay cursos disponibles para matrícula en este momento.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inicializar tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

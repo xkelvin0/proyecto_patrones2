@@ -1,0 +1,244 @@
+{% extends 'matriculas/base.html' %}
+
+{% block title %}Panel del Profesor - Sistema de Matrículas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="h4 mb-0">Bienvenido, {{ profesor.user.get_full_name|default:profesor.user.username }}</h2>
+                        <p class="text-muted mb-0">Código: {{ profesor.codigo_profesor }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success">Profesor</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Cursos a Cargo -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Mis Cursos</h5>
+                <span class="badge bg-primary">{{ cursos|length }} cursos</span>
+            </div>
+            <div class="card-body">
+                {% if cursos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Curso</th>
+                                    <th>Código</th>
+                                    <th>Estudiantes</th>
+                                    <th>Créditos</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for curso in cursos %}
+                                <tr>
+                                    <td>{{ curso.nombre }}</td>
+                                    <td>{{ curso.codigo }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ curso.matricula_set.count }} estudiantes
+                                        </span>
+                                    </td>
+                                    <td>{{ curso.creditos }}</td>
+                                    <td class="d-flex flex-column gap-2">
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'detalle_curso' curso.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                                <i class="bi bi-people"></i> Ver Estudiantes
+                                            </a>
+                                            <a href="{% url 'ver_contenido_curso' curso_id=curso.id %}" class="btn btn-sm btn-outline-info flex-grow-1">
+                                                <i class="bi bi-journal-text"></i> Ver Contenido
+                                            </a>
+                                        </div>
+                                        <a href="{% url 'crear_tarea' curso.id %}" class="btn btn-sm btn-outline-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Agregar Actividad
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <p class="text-muted">No tienes cursos asignados actualmente.</p>
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#crearCursoModal">
+                            <i class="bi bi-plus-circle"></i> Crear Nuevo Curso
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Profesor -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Mi Perfil</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 100px; height: 100px;">
+                        <i class="bi bi-person-check text-success" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Nombre Completo</h6>
+                    <p class="mb-0">{{ profesor.user.get_full_name|default:'No especificado' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Correo Electrónico</h6>
+                    <p class="mb-0">{{ profesor.user.email|default:'No especificado' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Código de Profesor</h6>
+                    <p class="mb-0">{{ profesor.codigo_profesor }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Especialidad</h6>
+                    <p class="mb-0">{{ profesor.especialidad|default:'No especificada' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Teléfono</h6>
+                    <p class="mb-0">{{ profesor.telefono|default:'No especificado' }}</p>
+                </div>
+                
+                <div class="d-grid">
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Resumen de Actividad</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="mb-0">{{ total_estudiantes }}</h3>
+                            <small class="text-muted">Estudiantes</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="mb-0">{{ cursos|length }}</h3>
+                            <small class="text-muted">Cursos</small>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded">
+                            <h3 class="mb-0">{{ total_calificaciones_pendientes }}</h3>
+                            <small class="text-muted">Calificaciones Pendientes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón flotante para crear curso -->
+{% if cursos %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <button type="button" class="btn btn-primary btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#crearCursoModal" title="Crear Nuevo Curso">
+        <i class="bi bi-plus-lg"></i>
+    </button>
+</div>
+{% endif %}
+
+<!-- Modal para crear nuevo curso -->
+<div class="modal fade" id="crearCursoModal" tabindex="-1" aria-labelledby="crearCursoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="crearCursoModalLabel">Crear Nuevo Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'crear_curso' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Curso</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo" class="form-label">Código del Curso</label>
+                        <input type="text" class="form-control" id="codigo" name="codigo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="creditos" class="form-label">Créditos</label>
+                            <input type="number" class="form-control" id="creditos" name="creditos" min="1" value="3" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cupos" class="form-label">Cupos Disponibles</label>
+                            <input type="number" class="form-control" id="cupos" name="cupos_disponibles" min="1" value="30" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="horario" class="form-label">Horario</label>
+                        <input type="text" class="form-control" id="horario" name="horario" placeholder="Ej: Lunes y Miércoles 14:00-16:00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="aula" class="form-label">Aula</label>
+                        <input type="text" class="form-control" id="aula" name="aula" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Curso</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inicializar tooltips y manejo del modal
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Verificar si hay errores en el formulario para mostrar el modal
+        var formHasErrors = {% if form_errors %}true{% else %}false{% endif %};
+        if (formHasErrors) {
+            var crearCursoModal = new bootstrap.Modal(document.getElementById('crearCursoModal'));
+            crearCursoModal.show();
+        }
+    });
+</script>
+{% endblock %}
