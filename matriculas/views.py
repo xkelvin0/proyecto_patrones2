@@ -475,7 +475,7 @@ def ver_contenido_curso(request, curso_id):
     tareas = curso.tareas.all()  # Usando el related_name 'tareas' definido en el modelo
     for tarea in tareas:
         # Si la tarea tiene una semana definida, usarla; de lo contrario, ponerla en la semana 1
-        semana = f'Semana {tarea.semana if hasattr(tarea, 'semana') else 1}'
+        semana = f"Semana {tarea.semana if hasattr(tarea, 'semana') else 1}"
         if semana in semanas:
             semanas[semana]['tareas'].append(tarea)
     
@@ -519,7 +519,7 @@ def ver_contenido_curso_estudiante(request, curso_id):
     # Agregar tareas existentes a sus respectivas semanas
     tareas = curso.tareas.all()
     for tarea in tareas:
-        semana = f'Semana {tarea.semana if hasattr(tarea, 'semana') else 1}'
+        semana = f"Semana {tarea.semana if hasattr(tarea, 'semana') else 1}"
         if semana in semanas:
             # Verificar si el estudiante ya entregó esta tarea
             entrega = EntregaTarea.objects.filter(
